@@ -1,6 +1,6 @@
-use crossterm::terminal;
-use std::io;
-use std::io::Read;
+use crossterm::event::{Event, KeyCode, KeyEvent};
+use crossterm::{event, terminal};
+use std::time::Duration;
 
 struct Cleanup;
 
@@ -10,16 +10,27 @@ impl Drop for Cleanup {
     }
 }
 
-fn main() {
+fn main() -> crossterm::Result<()> {
     let _cleanup = Cleanup;
-    terminal::enable_raw_mode().expect("Unable to enter raw mode");
-    let mut buf = [0; 1];
-    while io::stdin().read(&mut buf).expect("Failed to read line") == 1 && buf != [b'q'] {
-        let character = buf[0] as char;
-        if character.is_control() {
-            println!("{}", character as u8)
+    terminal::enable_raw_mode()?;
+    loop {
+        if event::poll(Duration::from_millis(500))? {
+            if let Event::Key(event) = event::read()? {
+                match event {
+                    KeyEvent {
+                        code: KeyCode::Char('q'),
+                        modifiers: event::KeyModifiers::NONE,
+                    } => break,
+                    _ => {
+                        //todo
+                    }
+                }
+                println!("{:?}\r", event);
+            };
         } else {
-            println!("{}", character)
+            println!("No input yet\r");
         }
+        /*end*/
     }
+    Ok(())
 }
