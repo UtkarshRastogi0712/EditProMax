@@ -136,6 +136,8 @@ impl CursorController {
                     self.cursor_x += 1;
                 }
             }
+            KeyCode::End => self.cursor_x = self.screen_columns - 1,
+            KeyCode::Home => self.cursor_x = 0,
             _ => unimplemented!(),
         }
     }
